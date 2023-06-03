@@ -1,0 +1,40 @@
+name: "Static Analysis"
+
+on: [push]
+
+jobs:
+  codeql:
+    name: codeql
+    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['cpp']
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
+
+    - name: apt-get install packages
+      run: sudo apt-get update -qq &&
+           sudo apt-get install --no-install-recommends -y
+               build-essential
+               libcgif-dev
+               pkg-config
+               clang
+               llvm
+
+    - name: CodeQL Initialize
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Build
+      run: |
+          make -j"$(nproc)"
+
+    - name: CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
